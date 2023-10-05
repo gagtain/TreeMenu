@@ -1,0 +1,6 @@
+{% if not error %}
+<a href="/{{ tree.name }}">{{ tree.name }}</a>
+{% include "tree_menu/object/recurse_tree.html" with child_list=tree.child count=1 url=url to_url=tree.name %}
+{% else %}
+    <p>{{ error }}</p>
+{% endif %}

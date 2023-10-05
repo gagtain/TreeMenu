@@ -1,0 +1,16 @@
+{% load tags %}
+
+<ul>
+{% for child in child_list %}
+    {% with to_url|add:"/"|add:child.name as to %}
+    <li>
+        <a href="/{{ to }}">{{ child.name }}</a>
+    </li>
+    {% name_is_url child.name count as is_url %}
+
+    {% if is_url and child.child %}
+        {% include "tree_menu/object/recurse_tree.html" with child_list=child.child count=count|add:1 to_url=to %}
+    {% endif %}
+    {% endwith %}
+{% endfor %}
+</ul>

@@ -11,15 +11,17 @@ class MenuHeader(models.Model):
     def __str__(self):
         return f"Menu Header - {self.name}"
 
+    class Meta:
+        verbose_name = "Заголовок меню"
+        verbose_name_plural = "Заголовки меню"
+
 
 class MenuItem(models.Model):
     name = models.CharField(max_length=50)
     menu = models.ForeignKey(to=MenuHeader,
                              on_delete=models.CASCADE,
                              related_name="first_child",
-                             blank=True,
-                             verbose_name="Объект MenuHeader. Не обязателен если указан parent",
-                             null=True
+                             verbose_name="Объект MenuHeader",
                              )
     parent = models.ForeignKey(to="tree_menu.MenuItem",
                                on_delete=models.CASCADE,
@@ -29,7 +31,9 @@ class MenuItem(models.Model):
                                null=True
                                )
 
-    # def validate_item(self):
-    #     if not self.parent and not self.menu:
-    #         raise ValidationError("Поле parent и menu пусты, необходимо указать минимум один из них")
+    def __str__(self):
+        return f"MenuItem - {self.name} "
 
+    class Meta:
+        verbose_name = "Элемент меню"
+        verbose_name_plural = "Элементы меню"

@@ -9,12 +9,29 @@ register = template.Library()
 @register.inclusion_tag('tree_menu/tags/menu.html', takes_context=True)
 def draw_menu(context: RequestContext, menu_name):
     path = list(filter(None, context.request.path.split('/')))
-    menu_items = get_menu_items(menu_name)
-    new_context = {
+    menu_items = list(get_menu_items(menu_name))
+    if not len(menu_items):
+        return {
+            'error': f"Menu {menu_name}, Does Not Exist"
+        }
+    tree = generate_tree_in_menu_items(menu_items, menu_name)
 
+    return {
+        'tree': tree,
+        'url': path,
+        'error': False
     }
-    generate_tree_in_menu_items(menu_items, menu_name, path)
-    if not len(path) or len(path) == 1:
-        return new_context
 
-    return new_context
+
+@register.simple_tag(takes_context=True)
+def name_is_url(context: dict, name: str, count: int):
+    """
+    Проверяет, входит ли элемент в url
+    """
+    try:
+        if context['url'][count] == name:
+            return True
+        else:
+            return False
+    except IndexError:
+        return False

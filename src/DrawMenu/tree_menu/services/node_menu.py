@@ -1,5 +1,3 @@
-from pprint import pprint
-
 from django.db.models import QuerySet
 
 from tree_menu.models import MenuItem
@@ -9,29 +7,27 @@ def get_menu_items(menu_name, select_related_obj=('parent', 'menu')) -> QuerySet
     return MenuItem.objects.select_related(*select_related_obj).filter(menu__name=menu_name)
 
 
-def generate_child(menu_item, select_tree):
-    ...
-
-
-def generate_tree_in_menu_items(menu_items: QuerySet[MenuItem], menu_name: str, url: list[str]):
+def generate_tree_in_menu_items(menu_items: list[MenuItem], menu_name: str):
     tree = {
         'name': menu_name,
         'child': []
     }
-    cache = {
 
+    cache = {
+        # содержит ключи parent со списком, куда необходимо добавлять элементы child
     }
     for menu_item in menu_items:
         if not menu_item.parent:
+            """ Если у объекта нет отца, то это значит, что он является корневым """
             if not f"{menu_item.id}__to" in cache.keys():
                 cache[f"{menu_item.id}__to"] = []
-            cache[str(menu_item.id)] = {
+            tree['child'].append({
                 'name': menu_item.name,
                 'child': cache[f"{menu_item.id}__to"]
-            }
-            tree['child'].append(cache[str(menu_item.id)])
+            })
         else:
             if f"{menu_item.parent.id}__to" in cache.keys():
+                """ если ключ parent уже есть в списке """
                 cache[f"{menu_item.id}__to"] = []
                 cache[f"{menu_item.parent.id}__to"].append({
                     'name': menu_item.name,
@@ -40,45 +36,12 @@ def generate_tree_in_menu_items(menu_items: QuerySet[MenuItem], menu_name: str, 
 
                 )
             else:
-                if f"{menu_item.parent.id}__to" in tree.keys():
-                    if not f"{menu_item.id}__to" in cache.keys():
-                        cache[f"{menu_item.id}__to"] = []
-                    cache[f"{menu_item.parent.id}__to"].append({
-                        'name': menu_item.name,
-                        'child': cache[f"{menu_item.id}__to"]
-                    }
-                    )
-                else:
-                    if not f"{menu_item.id}__to" in cache.keys():
-                        cache[f"{menu_item.id}__to"] = []
-                    cache[f"{menu_item.parent.id}__to"] = []
-                    cache[f"{menu_item.parent.id}__to"].append({
-                        'name': menu_item.name,
-                        'child': cache[f"{menu_item.id}__to"]
-                        })
-
-
-    pprint(tree)
-
-# if str(menu_item.parent.id) in cache.keys():
-#     cache[f"{menu_item.id}__to"] = []
-#     cache[str(menu_item.parent.id)]['child'].append(
-#         {
-#             'name': menu_item.parent.name,
-#             'child': [{
-#                 'name': menu_item.name,
-#                 'child': cache[f"{menu_item.id}__to"]
-#             }]
-#         }
-#     )
-# else:
-#     if f"{menu_item.parent.id}__to" in cache.keys():
-#         cache[f"{menu_item.parent.id}__to"].append({
-#             'name': menu_item.parent.name,
-#             'child': [{
-#                 'name': menu_item.name,
-#                 'child': []
-#             }]
-#         })
-#     else:
-#         print(cache, menu_item.name)
+                """ если ключа parent нету в списке """
+                if not f"{menu_item.id}__to" in cache.keys():
+                    cache[f"{menu_item.id}__to"] = []
+                cache[f"{menu_item.parent.id}__to"] = []
+                cache[f"{menu_item.parent.id}__to"].append({
+                    'name': menu_item.name,
+                    'child': cache[f"{menu_item.id}__to"]
+                })
+    return tree
